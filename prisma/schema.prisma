@@ -1,0 +1,35 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url = env("DATABASE_URL")
+}
+
+enum Direction {
+  BUY
+  SELL
+}
+
+model Trade {
+  id String @id @default(uuid())
+  ticker String
+  amount Int
+  price Int
+  direction Direction
+  filledAt DateTime @default(now())
+  traderId String
+  trader Trader @relation(references: [id], fields: [traderId])
+
+  @@index(traderId)
+}
+
+model Trader {
+  id String @id @default(uuid())
+  firstName String
+  lastName String?
+  email String @unique
+  password String
+  trades Trade[]
+}
