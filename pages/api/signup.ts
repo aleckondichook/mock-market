@@ -9,13 +9,19 @@ export default async function Handler(req: NextApiRequest, res: NextApiResponse)
   const salt = await bcrypt.genSalt()
   const password = await bcrypt.hash(rawPassword, salt)
 
-  const signup = await prisma.trader.create({
-    data: {
-      firstName,
-      lastName,
-      email,
-      password
-    }
-  })
-  res.json(signup)
+  try {
+    await prisma.trader.create({
+      data: {
+        firstName,
+        lastName,
+        email,
+        password
+      }
+    })
+    return res.status(200).json({ result: "success" })
+  }
+  catch(e) {
+    console.log('whoops', e)
+    return res.status(200).json({ result: "failure" })
+  }
 }
