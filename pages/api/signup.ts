@@ -22,6 +22,6 @@ export default async function Handler(req: NextApiRequest, res: NextApiResponse)
   }
   catch(e) {
     console.log('whoops', e)
-    return res.status(200).json({ result: "failure" })
+    return res.status(500).json({ result: "failure" })
   }
 }

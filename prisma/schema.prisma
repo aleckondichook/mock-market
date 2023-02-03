@@ -16,7 +16,7 @@ model Trade {
   id String @id @default(uuid())
   ticker String
   amount Int
-  price Int
+  price Float
   direction Direction
   filledAt DateTime @default(now())
   traderId String

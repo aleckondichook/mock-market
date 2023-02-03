@@ -1,4 +1,7 @@
 import type { NextPage } from "next"
+import { withSessionSsr } from "../../lib/withSession"
+import { prisma } from "../../lib/prisma"
+import Link from "next/link"
 import { useRouter } from "next/router"
 import useSwr from "swr"
 import { Line } from "react-chartjs-2"
@@ -27,15 +30,15 @@ ChartJS.register(
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
-const Ticker: NextPage = () => {
+const Ticker: NextPage = (account: any) => {
 
   const { query } = useRouter()
-  const { data, error, isLoading } = useSwr(`/api/trade/${query.ticker}`, fetcher)
+  const { data, error, isLoading } = useSwr(`/api/candles/${query.ticker}`, fetcher)
+  const { data: data1, error: error1, isLoading: isLoading1 } = useSwr(`/api/quotes/${query.ticker}`, fetcher)
   
-  if (error) return <div>failed to load users</div>
-  if (isLoading) return <div>Loading...</div>
-  if (!data) return null
-  console.log(data)
+  // if (error || error1) return <div>failed to load users</div>
+  // if (isLoading || isLoading1) return <div>Loading...</div>
+  if (!data || !data1) return null
   
   const options: any = {
     plugins: {
@@ -60,20 +63,28 @@ const Ticker: NextPage = () => {
       x: {
         grid: {
           display: false
+        },
+        ticks: {
+          font: {
+            size: 16
+          }
         }
       },
       y: {
         ticks: {
           min: Math.min(...data.c),
           max: Math.max(...data.c),
-          stepSize: 10
+          stepSize: 10,
+          font: {
+            size: 16
+          }
         }
       }
     }    
   }
   
   const fakeData: any = {
-    labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+    labels: getMonths(),
     datasets: [
       {
         data: data.c
@@ -81,9 +92,15 @@ const Ticker: NextPage = () => {
     ]
   }
 
+  function getMonths(): string[] {
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+    const currentMonth = new Date(Date.now()).getMonth()
+    return months.slice(currentMonth + 1, currentMonth + 13)
+  }
+
   async function trade(data: any) {
     try {
-      fetch('http://localhost:3000/api/trade/fill', {
+      fetch('http://localhost:3000/api/fill', {
         body: JSON.stringify(data),
         headers: {
           'Content-Type': 'application/json'
@@ -98,31 +115,82 @@ const Ticker: NextPage = () => {
 
   async function handleBuy() {
     const buyData: any = {
-      "ticker": query.ticker,
-      "amount": 5,
-      "price": data.c[11],
-      "direction": "BUY",
-      "filledAt": Date.now(),
-      "traderId": "asdf",
+      trader: {
+        connect: {
+          id: account.trader.id
+        }
+      },
+      ticker: query.ticker,
+      amount: 10,
+      price: data1.c,
+      direction: "BUY"
     }
-    trade(buyData)
+    await trade(buyData)
+
+
+    console.log(buyData)
   }
 
   return (
     <div className="flex flex-row mt-24 justify-around px-48 flex-1">
       <div className="w-[50vw] h-[50vh]">
-        <Line data={fakeData} width={130} height={80} options={options}/>
+        {isLoading ? "loading..." : <Line data={fakeData} width={130} height={80} options={options}/>}
       </div>
       <div className="flex flex-col w-[50%] items-center mt-16">
         <span className="text-[26px]">{query.ticker} stock</span>
-        <span className="text-[26px]">${data.c[11]}</span>
-        <div className="flex flex-row mt-24">
-          <button className="px-8 py-3 rounded-xl bg-slate-300 hover:bg-green-500" onClick={handleBuy}>buy</button>
-          <button className="px-8 py-3 rounded-xl ml-10 bg-slate-300 hover:bg-red-500">sell</button>
-        </div>
+        <span className="text-[26px]">${isLoading1 ? "..." : data1.c}</span>
+        {
+          account.loggedIn && <div className="flex flex-row mt-24">
+            <button className="px-8 py-3 rounded-xl bg-slate-300 hover:bg-green-500" onClick={handleBuy}>buy</button>
+            <button className="px-8 py-3 rounded-xl ml-10 bg-slate-300 hover:bg-red-500">sell</button>
+          </div>
+        }
+        {
+          !account.loggedIn && <div className="flex mt-24">
+            <Link href="/login"><span className="text-[26px] hover:underline">please login or signup here</span></Link>
+          </div>
+        }
       </div>
     </div>
   )
 }
+
+export const getServerSideProps = withSessionSsr(
+  async function getServerSideProps({ req }) {
+    const trader = req.session.trader
+    let loggedIn = true
+
+    if(trader) {
+      const traderAccount = await prisma.trader.findFirst({
+        where: {
+          email: trader.email
+        }
+      })
+  
+      return {
+        props: {
+          trader: traderAccount,
+          loggedIn: loggedIn
+        }
+      }
+    }
+    else {
+      loggedIn = false
+      return {
+        props: {
+          trader: {
+            email: "",
+            firstName: "",
+            id: "",
+            lastName: "",
+            password: ""
+          },
+          loggedIn: loggedIn
+        }
+      }
+    }
+    
+  }
+)
 
 export default Ticker

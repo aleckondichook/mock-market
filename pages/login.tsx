@@ -1,6 +1,6 @@
 import type { NextPage } from "next"
 import Link from "next/link"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { LoginFormData } from "../interfaces"
 import { withSessionSsr } from "../lib/withSession"
 import { prisma } from "../lib/prisma"
@@ -17,6 +17,12 @@ const Login: NextPage = (allTraders: any) => {
   })
 
   const router = useRouter()
+
+  const handleKeyDown = (event: { key: string }) => {
+    if(event.key === 'Enter') {
+      handleSubmit()
+    }
+  }
   
   async function handleSubmit() {
     setNoPasswordMatch(false)
@@ -54,11 +60,11 @@ const Login: NextPage = (allTraders: any) => {
         <h1 className="mx-auto text-[40px] mt-10">login to mock market</h1>
         <div className="w-[40%] h-[10%] mx-auto mt-20 flex flex-col">
           <span>email</span>
-          <input className="rounded-xl py-4 px-4 border-2 border-black" type="text" value={formDataObject.email} onChange={(e) => setFormDataObject(old => ({...old, email: e.target.value}))}/>
+          <input className="rounded-xl py-4 px-4 border-2 border-black" type="text" value={formDataObject.email} onKeyDown={handleKeyDown} onChange={(e) => setFormDataObject(old => ({...old, email: e.target.value}))}/>
         </div>
         <div className="w-[40%] h-[10%] mx-auto mt-12 flex flex-col">
           <span className={`${noPasswordMatch ? "text-red-600" : "text-black"}`}>password</span>
-          <input className={`rounded-xl py-4 px-4 border-2 ${noPasswordMatch ? "border-red-600" : "border-black"}`} type="text" value={formDataObject.password} onChange={(e) => setFormDataObject(old => ({...old, password: e.target.value}))}/>
+          <input className={`rounded-xl py-4 px-4 border-2 ${noPasswordMatch ? "border-red-600" : "border-black"}`} type="text" value={formDataObject.password} onKeyDown={handleKeyDown} onChange={(e) => setFormDataObject(old => ({...old, password: e.target.value}))}/>
         </div>
         <button className="rounded-xl py-3 px-8 bg-slate-300 hover:bg-slate-500 mx-auto mt-16" onClick={handleSubmit}>login</button>
         <div className="mx-auto mt-10">

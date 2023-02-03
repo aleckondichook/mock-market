@@ -23,6 +23,12 @@ const Signup: NextPage = (allTraders: any) => {
 
   const router = useRouter()
 
+  const handleKeyDown = (event: { key: string }) => {
+    if(event.key === 'Enter') {
+      handleSubmit()
+    }
+  }
+
   function handleEmpties() {
     setNameEmpty(false)
     setEmailEmpty(false)
@@ -81,19 +87,19 @@ const Signup: NextPage = (allTraders: any) => {
         <h1 className="mx-auto text-[40px] mt-10">signup to mock market</h1>
         <div className="w-[35%] h-[10%] mx-auto mt-10 flex flex-col">
           <span className={`${nameEmpty ? "text-red-600" : "text-black"}`}>first name</span>
-          <input className={`rounded-xl py-2 px-2 border-2 ${nameEmpty ? "border-red-600" : "border-black"}`} type="text" value={formDataObject.firstName} onChange={(e) => setFormDataObject(old => ({...old, firstName: e.target.value}))}/>
+          <input className={`rounded-xl py-2 px-2 border-2 ${nameEmpty ? "border-red-600" : "border-black"}`} type="text" value={formDataObject.firstName} onKeyDown={handleKeyDown} onChange={(e) => setFormDataObject(old => ({...old, firstName: e.target.value}))}/>
         </div>
         <div className="w-[35%] h-[10%] mx-auto mt-4 flex flex-col">
           <span>last name</span>
-          <input className="rounded-xl py-2 px-2 border-2 border-black" type="text" value={formDataObject.lastName} onChange={(e) => setFormDataObject(old => ({...old, lastName: e.target.value}))}/>
+          <input className="rounded-xl py-2 px-2 border-2 border-black" type="text" value={formDataObject.lastName} onKeyDown={handleKeyDown} onChange={(e) => setFormDataObject(old => ({...old, lastName: e.target.value}))}/>
         </div>
         <div className="w-[35%] h-[10%] mx-auto mt-4 flex flex-col">
           <span className={`${emailEmpty ? "text-red-600" : "text-black"}`}>email address</span>
-          <input className={`rounded-xl py-2 px-2 border-2 ${emailEmpty ? "border-red-600" : "border-black"}`} type="text" value={formDataObject.email} onChange={(e) => setFormDataObject(old => ({...old, email: e.target.value}))}/>
+          <input className={`rounded-xl py-2 px-2 border-2 ${emailEmpty ? "border-red-600" : "border-black"}`} type="text" value={formDataObject.email} onKeyDown={handleKeyDown} onChange={(e) => setFormDataObject(old => ({...old, email: e.target.value}))}/>
         </div>
         <div className="w-[35%] h-[10%] mx-auto mt-4 flex flex-col">
           <span className={`${passwordEmpty ? "text-red-600" : "text-black"}`}>password</span>
-          <input className={`rounded-xl py-2 px-2 border-2 ${passwordEmpty ? "border-red-600" : "border-black"}`} type="text" value={formDataObject.password} onChange={(e) => setFormDataObject(old => ({...old, password: e.target.value}))}/>
+          <input className={`rounded-xl py-2 px-2 border-2 ${passwordEmpty ? "border-red-600" : "border-black"}`} type="text" value={formDataObject.password} onKeyDown={handleKeyDown} onChange={(e) => setFormDataObject(old => ({...old, password: e.target.value}))}/>
         </div>
         <button className="rounded-xl py-3 px-8 bg-slate-300 hover:bg-slate-500 mx-auto mt-8" onClick={handleSubmit}>signup</button>
         <div className="mt-4 flex mx-auto">
