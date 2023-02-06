@@ -1,9 +1,11 @@
 import type { NextPage } from "next"
 import { withSessionSsr } from "../../lib/withSession"
 import { prisma } from "../../lib/prisma"
+import Loading from "../components/Loading"
 import Link from "next/link"
 import { useRouter } from "next/router"
 import useSwr from "swr"
+import { useState } from "react"
 import { Line } from "react-chartjs-2"
 import { 
   Chart as ChartJS,
@@ -32,12 +34,17 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
 const Ticker: NextPage = (account: any) => {
 
+  const [orderAmount, setOrderAmount] = useState<number | null>(null)
+  const [currentHoldings, setCurrentHoldings] = useState<number>(0)
+  const [holdingsError, setHoldingsError] = useState<boolean>(false)
+  const [orderError, setOrderError] = useState<boolean>(false)
+
   const { query } = useRouter()
   const { data, error, isLoading } = useSwr(`/api/candles/${query.ticker}`, fetcher)
   const { data: data1, error: error1, isLoading: isLoading1 } = useSwr(`/api/quotes/${query.ticker}`, fetcher)
   
   // if (error || error1) return <div>failed to load users</div>
-  // if (isLoading || isLoading1) return <div>Loading...</div>
+  if (isLoading || isLoading1) return <Loading />
   if (!data || !data1) return null
   
   const options: any = {
@@ -98,6 +105,19 @@ const Ticker: NextPage = (account: any) => {
     return months.slice(currentMonth + 1, currentMonth + 13)
   }
 
+  function checkHoldings(): number {
+    let holdings: number = 0
+    account.traderTrades.forEach((trade: any) => {
+      if(trade.ticker === query.ticker && trade.direction === "BUY") {
+        holdings += trade.amount
+      }
+      if(trade.ticker === query.ticker && trade.direction === "SELL") {
+        holdings -= trade.amount
+      }
+    })
+    return holdings
+  }
+
   async function trade(data: any) {
     try {
       fetch('http://localhost:3000/api/fill', {
@@ -106,7 +126,7 @@ const Ticker: NextPage = (account: any) => {
           'Content-Type': 'application/json'
         },
         method: 'POST'
-      }).then(() => console.log(`just posted this data ${data}`))
+      }) //.then(() => console.log(`just posted this data ${data}`))
     }
     catch (e) {
       console.log('oops')
@@ -114,6 +134,11 @@ const Ticker: NextPage = (account: any) => {
   }
 
   async function handleBuy() {
+    setOrderError(false)
+    if(!orderAmount) {
+      setOrderError(true)
+      return
+    }
     const buyData: any = {
       trader: {
         connect: {
@@ -121,28 +146,55 @@ const Ticker: NextPage = (account: any) => {
         }
       },
       ticker: query.ticker,
-      amount: 10,
+      amount: orderAmount,
       price: data1.c,
       direction: "BUY"
     }
     await trade(buyData)
+  }
 
-
-    console.log(buyData)
+  async function handleSell() {
+    setHoldingsError(false)
+    setOrderError(false)
+    if(!orderAmount) {
+      setOrderError(true)
+      return
+    }
+    if(checkHoldings() >= orderAmount) {
+      const sellData: any = {
+        trader: {
+          connect: {
+            id: account.trader.id
+          }
+        },
+        ticker: query.ticker,
+        amount: orderAmount,
+        price: data1.c,
+        direction: "SELL"
+      }
+      await trade(sellData)
+    }
+    else {
+      setHoldingsError(true)
+    }
   }
 
   return (
     <div className="flex flex-row mt-24 justify-around px-48 flex-1">
       <div className="w-[50vw] h-[50vh]">
-        {isLoading ? "loading..." : <Line data={fakeData} width={130} height={80} options={options}/>}
+        <Line data={fakeData} width={130} height={80} options={options}/>
       </div>
       <div className="flex flex-col w-[50%] items-center mt-16">
         <span className="text-[26px]">{query.ticker} stock</span>
-        <span className="text-[26px]">${isLoading1 ? "..." : data1.c}</span>
+        <span className="text-[26px]">${data1.c}</span>
         {
-          account.loggedIn && <div className="flex flex-row mt-24">
-            <button className="px-8 py-3 rounded-xl bg-slate-300 hover:bg-green-500" onClick={handleBuy}>buy</button>
-            <button className="px-8 py-3 rounded-xl ml-10 bg-slate-300 hover:bg-red-500">sell</button>
+          account.loggedIn && <div className="flex flex-col mt-24">
+            <input className={`px-6 py-3 ${orderError ? "bg-red-500" : "bg-slate-300"} w-[60%] mx-auto rounded-xl`} type="number" placeholder="0" onChange={(e) => setOrderAmount(parseInt(e.target.value))}/>
+            <div className="flex flex-row mt-10 mx-auto">
+              <button className="px-8 py-3 rounded-xl bg-slate-300 hover:bg-green-500" onClick={handleBuy}>buy</button>
+              <button className="px-8 py-3 rounded-xl ml-10 bg-slate-300 hover:bg-red-500" onClick={handleSell} >sell</button>
+            </div>
+            <h3 className={`mx-auto mt-5 ${holdingsError ? "text-red-500" : "text-black"}`}>current holdings: {checkHoldings()} shares</h3>
           </div>
         }
         {
@@ -166,11 +218,18 @@ export const getServerSideProps = withSessionSsr(
           email: trader.email
         }
       })
+
+      const traderTrades = await prisma.trade.findMany({
+        where: {
+          traderId: trader.id
+        }
+      })
   
       return {
         props: {
           trader: traderAccount,
-          loggedIn: loggedIn
+          loggedIn: loggedIn,
+          traderTrades: JSON.parse(JSON.stringify(traderTrades))
         }
       }
     }
@@ -185,7 +244,8 @@ export const getServerSideProps = withSessionSsr(
             lastName: "",
             password: ""
           },
-          loggedIn: loggedIn
+          loggedIn: loggedIn,
+          traderTrades: []
         }
       }
     }

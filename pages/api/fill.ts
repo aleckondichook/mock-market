@@ -19,23 +19,7 @@ export default async function Handler(req: NextApiRequest, res: NextApiResponse)
   }
   catch (e) {
     console.log('whoops', e)
+    return res.status(500).json({ result: "failure" })
   }
-
-  // console.log({ 
-  //   data: {
-  //     trader,
-  //     ticker,
-  //     amount,
-  //     price,
-  //     direction
-  //   }
-  //  })
-
-  // await prisma.test.create({
-  //   data: {
-  //     name: "jacob jingleheimer"
-  //   }
-  // })
-  // res.status(200).json({message: "success"})
 
 }
