@@ -24,7 +24,7 @@ export default function Handler(req: NextApiRequest, res: NextApiResponse) {
   async function getData() {
     const yearResponse = await fetch(`https://finnhub.io/api/v1/stock/candle?symbol=${query.ticker?.toString().toUpperCase()}&resolution=D&from=${Math.round((Date.now() - oneYear) / 1000)}&to=${Math.round(Date.now() / 1000)}&token=${process.env.FINNHUB_TOKEN}`)
     const yearData = await yearResponse.json()
-    const dayResponse = await fetch(`https://finnhub.io/api/v1/stock/candle?symbol=${query.ticker?.toString().toUpperCase()}&resolution=30&from=${Math.round((Date.now() - oneDay) / 1000)}&to=${Math.round(Date.now() / 1000)}&token=${process.env.FINNHUB_TOKEN}`)    
+    const dayResponse = await fetch(`https://finnhub.io/api/v1/stock/candle?symbol=${query.ticker?.toString().toUpperCase()}&resolution=30&from=${Math.round((Date.now() - (4 * oneDay)) / 1000)}&to=${Math.round(Date.now() / 1000)}&token=${process.env.FINNHUB_TOKEN}`)    
     const dayData = await dayResponse.json()
     const yearAndDay = {
       year: yearData,

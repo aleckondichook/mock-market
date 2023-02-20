@@ -1,14 +1,20 @@
 import { AppProps } from "next/app"
 import Layout from "./components/Layout"
+import Head from "next/head"
 import "../styles/global.css"
 
 
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
-    <Layout>
-      <Component {...pageProps} />
-    </Layout>
+    <>
+      <Head>
+        <title>Mock Market</title>
+      </Head>
+      <Layout>
+        <Component {...pageProps} />
+      </Layout>
+    </>
   )
 }
 

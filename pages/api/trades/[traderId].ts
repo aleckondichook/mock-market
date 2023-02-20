@@ -1,17 +1,15 @@
 import { prisma } from "../../../lib/prisma"
 import type { NextApiRequest, NextApiResponse  } from "next";
 
-export default function Handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function Handler(req: NextApiRequest, res: NextApiResponse) {
     
   try {
     const { query } = req
     const traderId = query.traderId
-    return prisma.trade.findMany({
+    const trades = await prisma.trade.findMany({
       where: { traderId: `${traderId}` }
-    }).then((response) => {
-      return res.status(200).json(response)
     })
-    
+    return res.status(200).json(trades)
   }
   catch(e) {
     console.log('whoops', e)

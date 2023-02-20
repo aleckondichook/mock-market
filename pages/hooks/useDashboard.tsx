@@ -1,14 +1,13 @@
-import { TradeData } from "../../interfaces"
+import { TradeData, HoldingsData } from "../../interfaces"
 
 const useDashboard = (trades: TradeData[]) => {
 
-  const dateArray: string[] = []
+  let dateArray: string[] = []
   const initialValue: number = 0
   const tradeArray: string[] = []
   const timestamps: number[] = []
   const intervalTimestamps: number[] = []
   const tradeArrayArray: TradeData[][] = []
-  
   
   
   trades.forEach((trade: TradeData) => {
@@ -25,7 +24,26 @@ const useDashboard = (trades: TradeData[]) => {
   trades.forEach((trade) => {
     return tradeArray.push(trade.ticker)
   })
-  const tickers = Array.from(new Set(tradeArray))
+
+  const tickers: string[] = Array.from(new Set(tradeArray))
+  const holdings: HoldingsData[] = []
+  tickers.forEach((ticker) => {
+    let temp: number = 0
+    for(let trade of trades) {
+      if(trade.ticker === ticker) {
+        if(trade.direction === "BUY") {
+          temp += trade.amount
+        }
+        else {
+          temp -= trade.amount
+        }
+      }
+    }
+    holdings.push({
+      ticker: ticker,
+      amount: temp
+    })
+  })
 
   for(let i = 0; i < intervalTimestamps.length; i++) {
     let tempTrades: TradeData[] = []
@@ -43,25 +61,34 @@ const useDashboard = (trades: TradeData[]) => {
     })
     tradeArrayArray.push(tempTrades)
   }
-
-  const reduced = trades.reduce((acc, val) => {
-    if(val.direction === "BUY") {
-      return acc + (val.amount * val.price)
-    }
-    else {
-      return acc - (val.amount * val.price)
-    }
-  }, initialValue)
-
-
-
   
-  console.log(tradeArrayArray)
-  console.log(dateArray)
+  let portfolioValue: number[] = []
+  let pvAcc: number = 0
+  tradeArrayArray.map((interval) => {
+    pvAcc += interval.reduce((acc, val) => {
+      if(val.direction === "BUY") {
+        return acc + (val.amount * val.price)
+      }
+      else {
+        return acc - (val.amount * val.price)
+      }
+    }, initialValue)
+    portfolioValue.push(pvAcc)
+  })
 
+  if(dateArray[0] === dateArray[dateArray.length - 1]) {
+    dateArray = ["", "", "", "", "", dateArray[0], "", "", "", "", ""]
+  }
+
+  if(trades.length == 1) {
+    dateArray = ["", "", "", "", "", `${new Date(trades[0].filledAt).getMonth() + 1}/${new Date(trades[0].filledAt).getDate()}`, "", "", "", "", ""]
+    portfolioValue = [0, trades[0].amount * trades[0].price]
+  }
 
   return {
-    labels: dateArray
+    labels: dateArray,
+    dataset: portfolioValue,
+    holdings: holdings
   }
 
 }

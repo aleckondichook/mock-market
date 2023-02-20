@@ -3,7 +3,7 @@ import Nav from "./Nav"
 import Footer from "./Footer"
 
 const Layout = ({ children }: LayoutProps) => (
-  <div className="m-0 p-0 overflow-hidden box-border flex flex-col h-[100vh]">
+  <div className="m-0 p-0 overflow-hidden box-border flex flex-col h-[100vh]" id="page-div">
     <Nav />
     {children}
     <Footer />

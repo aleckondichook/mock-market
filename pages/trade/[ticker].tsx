@@ -4,6 +4,7 @@ import { prisma } from "../../lib/prisma"
 import { useState } from "react"
 import { useRouter } from "next/router"
 import Loading from "../components/Loading"
+import Custom500 from "../500"
 import Link from "next/link"
 import useSwr from "swr"
 import { Line } from "react-chartjs-2"
@@ -37,7 +38,6 @@ const Ticker: NextPage = (account: any) => {
   const dayInMilliseconds: number = 86400000
 
   const [orderAmount, setOrderAmount] = useState<number | null>(null)
-  const [currentHoldings, setCurrentHoldings] = useState<number>(0)
   const [recentTrade, setRecentTrade] = useState<string>('')
   const [holdingsError, setHoldingsError] = useState<boolean>(false)
   const [orderError, setOrderError] = useState<boolean>(false)
@@ -51,10 +51,10 @@ const Ticker: NextPage = (account: any) => {
   const { data, error, isLoading } = useSwr(`/api/candles/${query.ticker}`, fetcher)
   const { data: data1, error: error1, isLoading: isLoading1 } = useSwr(`/api/quotes/${query.ticker}`, fetcher)
   
-  // if (error || error1) return <div>failed to load users</div>
   if (isLoading || isLoading1) return <Loading />
-  if (!data || !data1) return null
-  
+  if (data.year.s === "no_data" || data.day.s === "no_data" || data1 === "no_data" || data.result === "failure" || data1.result === "failure") return <Custom500 />
+  console.log(data)
+
   const options: any = {
     plugins: {
       legend: {
@@ -89,7 +89,7 @@ const Ticker: NextPage = (account: any) => {
         ticks: {
           min: getMinTick(),
           max: getMaxTick(),
-          stepSize: 10,
+          stepSize: getStepSize(),
           font: {
             size: 16
           }
@@ -107,6 +107,21 @@ const Ticker: NextPage = (account: any) => {
     ]
   }
 
+  function getStepSize() {
+    if(dayToggle) {
+      return Math.round((Math.max(...data.day.c.slice(-14)) - Math.min(...data.day.c.slice(-14))) / 2) == 0 ? 10 : Math.round((Math.max(...data.day.c.slice(-14)) - Math.min(...data.day.c.slice(-14))) / 2)
+    }
+    if(weekToggle) {
+      return Math.round((Math.max(...data.year.c.slice(-6)) - Math.min(...data.year.c.slice(-6))) / 2) == 0 ? 10 : Math.round((Math.max(...data.year.c.slice(-6)) - Math.min(...data.year.c.slice(-6))) / 2)
+    }
+    if(monthToggle) {
+      return Math.round((Math.max(...data.year.c.slice(-23)) - Math.min(...data.year.c.slice(-23))) / 2) == 0 ? 10 :  Math.round((Math.max(...data.year.c.slice(-23)) - Math.min(...data.year.c.slice(-23))) / 2)
+    }
+    if(yearToggle) {
+      return Math.round((Math.max(...data.year.c) - Math.min(...data.year.c)) / 2) == 0 ? 10 : Math.round((Math.max(...data.year.c) - Math.min(...data.year.c)) / 2)
+    }
+  }
+
   function getMinTick() {
     if(dayToggle) {
       return Math.min(...data.day.c.slice(-14))
@@ -115,7 +130,7 @@ const Ticker: NextPage = (account: any) => {
       return Math.min(...data.year.c.slice(-6))
     }
     if(monthToggle) {
-      return Math.min(...data.year.c.slice(-23))
+      return Math.min(...data.year.c.slice(-21))
     }
     if(yearToggle) {
       return Math.min(...data.year.c)
@@ -130,7 +145,7 @@ const Ticker: NextPage = (account: any) => {
       return Math.max(...data.year.c.slice(-6))
     }
     if(monthToggle) {
-      return Math.max(...data.year.c.slice(-23))
+      return Math.max(...data.year.c.slice(-21))
     }
     if(yearToggle) {
       return Math.max(...data.year.c)
@@ -139,52 +154,78 @@ const Ticker: NextPage = (account: any) => {
 
   function getDataset() {
     if(dayToggle) {
-      return data.day.c.slice(-14)
+      return checkTimeOfDay()
     }
     if(weekToggle) {
       return data.year.c.slice(-6)
     }
     if(monthToggle) {
-      return data.year.c.slice(-23)
+      return data.year.c.slice(-21)
     }
     if(yearToggle) {
       return data.year.c
     }
   }
 
+  function checkTimeOfDay() {
+    const rn = new Date(Date.now())
+    if(rn.getHours() < 16 && rn.getHours() >= 9) {
+      if(rn.getHours() == 9 && rn.getMinutes() < 30) {
+        return data.day.c.slice(-14)
+      }
+      if(rn.getDay() == 0 || rn.getDay() == 6) {
+        return data.day.c.slice(-14)
+      }
+      return getDayDataset()
+    }
+    return data.day.c.slice(-14)
+  }
+  
+  function getDayDataset() {
+    const rn = new Date(Date.now())
+    let time = rn.getHours()
+    if(rn.getMinutes() >= 30) {
+      time = ((time - 9) * 2) + 1
+    }
+    else {
+      time = (time - 9) * 2
+    }
+    return data.day.c.slice(-time)
+  }
+
   function getBorderColor() {
     if(dayToggle) {
-      return data.day.c[9] < data.day.c[22]
+      return data.day.c[9] < data.day.c[data.day.c.length - 1]
     }
     if(weekToggle) {
-      return data.year.c[245] < data.year.c[249]
+      return data.year.c[245] < data.year.c[data.year.c.length - 1]
     }
     if(monthToggle) {
-      return data.year.c[228] < data.year.c[249]
+      return data.year.c[228] < data.year.c[data.year.c.length - 1]
     }
     if(yearToggle) {
-      return data.year.c[0] < data.year.c[249]
+      return data.year.c[0] < data.year.c[data.year.c.length - 1]
     }
   }
 
   function getBackgroundColor() {
     if(dayToggle) {
-      return data.day.c[9] < data.day.c[22]
+      return data.day.c[9] < data.day.c[data.day.c.length - 1]
     }
     if(weekToggle) {
-      return data.year.c[245] < data.year.c[249]
+      return data.year.c[245] < data.year.c[data.year.c.length - 1]
     }
     if(monthToggle) {
-      return data.year.c[228] < data.year.c[249]
+      return data.year.c[228] < data.year.c[data.year.c.length - 1]
     }
     if(yearToggle) {
-      return data.year.c[0] < data.year.c[249]
+      return data.year.c[0] < data.year.c[data.year.c.length - 1]
     }
   }
 
   function getLabelSize(): number {
     if(dayToggle) {
-      return 14
+      return 12
     }
     if(yearToggle) {
       return 1
@@ -251,6 +292,9 @@ const Ticker: NextPage = (account: any) => {
       }
       modifiedMonths.push(month)
     }
+    while(modifiedMonths.length > data.year.c.length) {
+      modifiedMonths.pop()
+    }
     return modifiedMonths
   }
 
@@ -308,7 +352,7 @@ const Ticker: NextPage = (account: any) => {
           'Content-Type': 'application/json'
         },
         method: 'POST'
-      }).then(() => setRecentTrade(`you just ${JSON.stringify(data.direction) === "BUY" ? "bought" : "sold"} ${JSON.stringify(data.amount)} shares of ${JSON.stringify(data.ticker).toUpperCase()} for $${(data.amount * data.price).toFixed()}`))
+      }).then(() => setRecentTrade(`you just ${data.direction === "BUY" ? "bought" : "sold"} ${JSON.stringify(data.amount)} shares of ${data.ticker.toUpperCase()} for $${(data.amount * data.price).toFixed(2)}`))
     }
     catch (e) {
       console.log('oops')
@@ -380,7 +424,7 @@ const Ticker: NextPage = (account: any) => {
         </div>
       </div>
       <div className="flex flex-col w-[50%] items-center mt-16">
-        <span className="text-[26px]">{query.ticker} stock</span>
+        <span className="text-[26px]">{typeof query.ticker === "string" ? (query.ticker).toUpperCase() : ""} stock</span>
         <span className="text-[26px]">${data1.c.toFixed(2)}</span>
         {
           account.loggedIn && <div className="flex flex-col mt-24">

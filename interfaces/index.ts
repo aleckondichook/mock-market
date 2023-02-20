@@ -30,3 +30,8 @@ export interface TradeData {
   filledAt: Date;
   traderId: string;
 }
+
+export interface HoldingsData {
+  ticker: string;
+  amount: number;
+}
