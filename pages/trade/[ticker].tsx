@@ -52,7 +52,7 @@ const Ticker: NextPage = (account: any) => {
   const { data: data1, error: error1, isLoading: isLoading1 } = useSwr(`/api/quotes/${query.ticker}`, fetcher)
   
   if (isLoading || isLoading1) return <Loading />
-  if (data.year.s === "no_data" || data.day.s === "no_data" || data1 === "no_data" || data.result === "failure" || data1.result === "failure") return <Custom500 />
+  if (!data || !data1 || data.result === "failure" || data1.result === "failure" || data.year.s === "no_data" || data.day.s === "no_data" || data1 === "no_data" ) return <Custom500 />
   console.log(data)
 
   const options: any = {
@@ -160,7 +160,7 @@ const Ticker: NextPage = (account: any) => {
       return data.year.c.slice(-6)
     }
     if(monthToggle) {
-      return data.year.c.slice(-21)
+      return data.year.c.slice(-getMonthTimeframe().length)
     }
     if(yearToggle) {
       return data.year.c

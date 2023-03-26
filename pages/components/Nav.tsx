@@ -29,7 +29,6 @@ export default function Nav() {
     setNavOpen(prev => !prev)
   }
 
-
   return (
     <nav className="top-0 z-50 py-8 px-4 lg:px-24 min-w-screen">
       <div className="flex flex-row items-center justify-between">

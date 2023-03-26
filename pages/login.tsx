@@ -10,7 +10,9 @@ import { useRouter } from "next/router"
 
 const Login: NextPage = (allTraders: any) => {
 
+  const [noAccountExist, setNoAccountExist] = useState<boolean>(false)
   const [noPasswordMatch, setNoPasswordMatch] = useState<boolean>(false)
+  const [colorToggle, setColorToggle] = useState<boolean>(false)
   const [formDataObject, setFormDataObject] = useState<LoginFormData>({
     email: "",
     password: ""
@@ -25,11 +27,14 @@ const Login: NextPage = (allTraders: any) => {
   }
   
   async function handleSubmit() {
+    changleColor()
     setNoPasswordMatch(false)
+    setNoAccountExist(false)
     const checkTrader = allTraders.allTraders.find((trader: { email: string }) => trader.email === formDataObject.email)
     
     if(!checkTrader) {
       toast.error("this account does not exist")
+      setNoAccountExist(true)
       return
     }
 
@@ -53,21 +58,28 @@ const Login: NextPage = (allTraders: any) => {
     router.push('/dashboard')
   }
 
+  function changleColor() {
+    setColorToggle(true)
+    setTimeout(() => {
+      setColorToggle(false)
+    }, 2000)
+  }
+
   return (
     <div className="flex flex-1">
       <Toaster position="top-center" reverseOrder={true} />
-      <div className="mx-auto mt-20 h-[70%] w-[50%] rounded-xl border-2 border-slate-700 flex flex-col">
-        <h1 className="mx-auto text-[40px] mt-10">login to mock market</h1>
-        <div className="w-[40%] h-[10%] mx-auto mt-20 flex flex-col">
-          <span>email</span>
-          <input className="rounded-xl py-4 px-4 border-2 border-black" type="text" value={formDataObject.email} onKeyDown={handleKeyDown} onChange={(e) => setFormDataObject(old => ({...old, email: e.target.value}))}/>
+      <div className="mx-auto mt-20 h-[70%] w-[90%] lg:w-[50%] rounded-2xl border-2 border-black bg-slate-100 flex flex-col">
+        <h1 className="mx-auto text-[50px] mt-10 font-german">login to mock market</h1>
+        <div className="w-[75%] lg:w-[40%] h-[10%] mx-auto mt-10 flex flex-col">
+          <span className={`${noAccountExist ? "text-red-600" : "text-black"}`}>email</span>
+          <input className={`rounded-xl py-4 px-4 border-2 ${noAccountExist ? "border-red-600" : "border-black"}`} type="text" value={formDataObject.email} onKeyDown={handleKeyDown} onChange={(e) => setFormDataObject(old => ({...old, email: e.target.value}))}/>
         </div>
-        <div className="w-[40%] h-[10%] mx-auto mt-12 flex flex-col">
+        <div className="w-[75%] lg:w-[40%] h-[10%] mx-auto mt-12 flex flex-col">
           <span className={`${noPasswordMatch ? "text-red-600" : "text-black"}`}>password</span>
           <input className={`rounded-xl py-4 px-4 border-2 ${noPasswordMatch ? "border-red-600" : "border-black"}`} type="text" value={formDataObject.password} onKeyDown={handleKeyDown} onChange={(e) => setFormDataObject(old => ({...old, password: e.target.value}))}/>
         </div>
-        <button className="rounded-xl py-3 px-8 bg-slate-300 hover:bg-slate-500 mx-auto mt-16" onClick={handleSubmit}>login</button>
-        <div className="mx-auto mt-10">
+        <button className={`rounded-xl py-2 px-6 bg-white hover:bg-black border-2 border-black hover:border-white hover:text-white font-german text-[28px] w-[50%] lg:w-[25%] mx-auto mt-20 ${colorToggle ? "bg-black text-white border-white" : "bg-white text-black border-black"}`} onClick={handleSubmit} id="home-button" >login</button>
+        <div className="mx-auto mt-6">
           <Link href="/signup"><span className="hover:underline">if you do not have an account, please sign up here</span></Link>
         </div>
       </div>
