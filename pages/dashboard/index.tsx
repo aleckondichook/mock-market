@@ -2,6 +2,7 @@ import type { NextPage } from "next"
 import { withSessionSsr } from "../../lib/withSession"
 import { useRouter } from "next/router"
 import { prisma } from "../../lib/prisma"
+import Link from "next/link"
 import Loading from "../components/Loading"
 import Custom500 from "../500"
 import useDashboard from "../hooks/useDashboard"
@@ -40,9 +41,7 @@ const Dashboard: NextPage = (traderAccount: any) => {
   if (isLoading) return <Loading />
   if (!data || data.result === "failure") return <Custom500 />
 
-
-  const dashboardData = useDashboard(data)
-  console.log(dashboardData)
+  const dashboardData = useDashboard(data)  
 
   const options: any = {
     plugins: {
@@ -108,10 +107,12 @@ const Dashboard: NextPage = (traderAccount: any) => {
   
   function getChart() {
     if(!dashboardData.labels.length || !dashboardData.dataset.length || !dashboardData.holdings.length) {
-      return <div>you havent placed any trades yet</div> //todo css
+      return <div className="font-german mt-[24%] ml-[18%] text-[50px]">you havent placed any trades yet</div> //todo css
     }
     else {
-      return <Line data={candleData} width={130} height={80} options={options} />
+      return <div className="ml-[14%] mt-[16%]">
+        <Line data={candleData} width={130} height={80} options={options} />
+      </div>
     }
   }
 
@@ -121,18 +122,21 @@ const Dashboard: NextPage = (traderAccount: any) => {
         {getChart()}
       </div>
       <div className="flex flex-col mx-auto">
-        <h1 className="text-[24px] mx-auto mt-12">dashboard page</h1>
-        <h1 className="text-[24px] mx-auto mt-24">welcome {traderAccount.traderAccount.firstName} {traderAccount.traderAccount.lastName}</h1>
-        <div className="flex flex-col mt-12">
+        <h1 className="text-[60px] mx-auto mt-12 font-german">{traderAccount.traderAccount.firstName} {traderAccount.traderAccount.lastName}'s dashboard</h1>
+        <div className="flex w-[75%] mx-auto flex-col mt-12 border-2 border-black bg-slate-100 rounded-xl overflow-auto h-[45%] pb-10" id="hide-scrollbar">
+          <h1 className="font-german ml-5 underline text-[30px] my-5">current holdings</h1>
           {
-            dashboardData.holdings.map((holding) => {
-              return <div className="mt-2 mx-auto" key={holding.ticker}>
-                <span className="">{holding.amount} shares of {holding.ticker}</span>
+            dashboardData.holdings.sort((a, b) => b.amount- a.amount).map((holding) => {
+              return <div className="mt-4 mx-auto w-[90%] border-b-2 border-slate-300" key={holding.ticker}>
+                <div className="flex flex-row justify-between">
+                  <span className="text-[20px]">${holding.ticker} - {holding.amount} shares</span>
+                  <Link href={`/trade/${holding.ticker}`}><span className="underline hover:opacity-25">trade</span></Link>
+                </div>
               </div>
             })
           }
         </div>
-        <button className="mx-auto px-3 py-3 w-48 bg-slate-300 hover:bg-slate-600 rounded-xl mt-24" onClick={handleLogout}>logout</button>
+        <button className="mx-auto px-3 py-3 w-48 border-2 border-black bg-white font-german hover:bg-black hover:border-white hover:text-white text-[24px] rounded-xl mt-10" id="home-button" onClick={handleLogout}>logout</button>
       </div>
     </div>
   )

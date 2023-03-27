@@ -30,7 +30,7 @@ const useDashboard = (trades: TradeData[]) => {
   tickers.forEach((ticker) => {
     let temp: number = 0
     for(let trade of trades) {
-      if(trade.ticker === ticker) {
+      if(trade.ticker.toUpperCase() === ticker.toUpperCase()) {
         if(trade.direction === "BUY") {
           temp += trade.amount
         }

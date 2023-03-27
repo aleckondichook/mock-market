@@ -10,6 +10,7 @@ import { useRouter } from "next/router"
 
 const Login: NextPage = (allTraders: any) => {
 
+  const [queryTicker, setQueryTicker] = useState<string>('')
   const [noAccountExist, setNoAccountExist] = useState<boolean>(false)
   const [noPasswordMatch, setNoPasswordMatch] = useState<boolean>(false)
   const [colorToggle, setColorToggle] = useState<boolean>(false)
@@ -18,6 +19,13 @@ const Login: NextPage = (allTraders: any) => {
     password: ""
   })
 
+  useEffect(() => {
+    const url: string[] = window.location.href.split('=')
+    if(url[1]) {
+      setQueryTicker(url[1])
+    }
+  }, [])
+  
   const router = useRouter()
 
   const handleKeyDown = (event: { key: string }) => {
@@ -55,7 +63,12 @@ const Login: NextPage = (allTraders: any) => {
       body: JSON.stringify(formDataObject)
     })
 
-    router.push('/dashboard')
+    if(!queryTicker) {
+      router.push('/dashboard')
+    }
+    else {
+      router.push(`/trade/${queryTicker}`)
+    }
   }
 
   function changleColor() {
@@ -90,6 +103,7 @@ const Login: NextPage = (allTraders: any) => {
 export const getServerSideProps = withSessionSsr(
   async function getServerSideProps({ req }) {
     const trader = req.session.trader
+    let allTraders
 
     if(trader) {
       return {
@@ -100,7 +114,17 @@ export const getServerSideProps = withSessionSsr(
       }
     }
 
-    const allTraders = await prisma.trader.findMany()
+    try {
+      allTraders = await prisma.trader.findMany()
+    }
+    catch(e) {
+      return {
+        redirect: {
+          destination: '/500',
+          permanent: false
+        }
+      }
+    }
 
     return {
       props: {

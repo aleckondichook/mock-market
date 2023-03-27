@@ -22,12 +22,12 @@ const Search: NextPage = () => {
       setExistsError(true)
     }
     else {
-      router.push(`/trade/${inputText}`)
+      router.push(`/trade/${inputText.toUpperCase()}`)
     }
   }
 
   async function checkTicker() {
-    return await fetch(`/api/search/${inputText}`)
+    return await fetch(`/api/search/${inputText.toUpperCase()}`)
       .then((response) => response.json())
       .then((data) => {
         return data

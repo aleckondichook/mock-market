@@ -15,7 +15,7 @@ export default function Handler(req: NextApiRequest, res: NextApiResponse) {
   //   t: 1674593628
   // }
   // return res.status(200).json(fakeData)
-  
+
   try {
     return fetch(`https://finnhub.io/api/v1/quote?symbol=${query.ticker?.toString().toUpperCase()}&token=${process.env.FINNHUB_TOKEN}`)
       .then((response) => response.json())
@@ -27,4 +27,5 @@ export default function Handler(req: NextApiRequest, res: NextApiResponse) {
     console.log('whoops', e)
     return res.status(500).json({ result: "failure" })
   }
+  
 }
