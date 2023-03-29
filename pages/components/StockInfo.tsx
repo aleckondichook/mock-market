@@ -15,7 +15,7 @@ export default function StockInfo(holdings: {"holdings": number}) {
     <div className="flex flex-row w-[60%]">
       <div className="flex flex-col w-[50%]">
         <h2 className="font-german text-[25px]">current holdings</h2>
-        <h3>{holdings.holdings} shares</h3>
+        <h3>{holdings.holdings} {holdings.holdings > 1 ? "shares" : "share"}</h3>
         <h2 className="font-german text-[25px] mt-3">52-week high</h2>
         <h3>${data?.high ? data.high.toLocaleString('en-US', { maximumFractionDigits: 2 }) : "0"}</h3>
         <h2 className="font-german text-[25px] mt-3">52-week low</h2>

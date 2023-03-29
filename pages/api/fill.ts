@@ -15,7 +15,7 @@ export default async function Handler(req: NextApiRequest, res: NextApiResponse)
         direction
       }
     })
-    res.status(200).json({message: 'trade filled'})
+    return res.status(200).json({message: 'trade filled'})
   }
   catch (e) {
     console.log('whoops', e)
