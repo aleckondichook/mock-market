@@ -5,7 +5,7 @@ const useLeaderboard = (data: any) => {
   const traderTrades: { trader: any; trades: any[] }[] = []
   const portfolioValues: any[] = []
 
-  if(data.traders) {
+  if(data.traders instanceof Array) {
     data.traders.forEach((trader: any) => {
       let tempTrades: any[] = []
       for(let trade of data.trades) {
