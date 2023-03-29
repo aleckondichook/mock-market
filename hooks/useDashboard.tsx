@@ -29,38 +29,42 @@ const useDashboard = (trades: TradeData[]) => {
 
   const tickers: string[] = Array.from(new Set(tradeArray))
   const holdings: HoldingsData[] = []
-  tickers.forEach((ticker) => {
-    let temp: number = 0
-    for(let trade of trades) {
-      if(trade.ticker.toUpperCase() === ticker.toUpperCase()) {
-        if(trade.direction === "BUY") {
-          temp += trade.amount
-        }
-        else {
-          temp -= trade.amount
+  if(tickers) {
+    tickers.forEach((ticker) => {
+      let temp: number = 0
+      for(let trade of trades) {
+        if(trade.ticker.toUpperCase() === ticker.toUpperCase()) {
+          if(trade.direction === "BUY") {
+            temp += trade.amount
+          }
+          else {
+            temp -= trade.amount
+          }
         }
       }
-    }
-    holdings.push({
-      ticker: ticker,
-      amount: temp
+      holdings.push({
+        ticker: ticker,
+        amount: temp
+      })
     })
-  })
+  }
 
   for(let i = 0; i < intervalTimestamps.length; i++) {
     let tempTrades: TradeData[] = []
-    trades.forEach((trade) => {
-      if(!intervalTimestamps[i+1]) {
-        if(new Date(trade.filledAt).getTime() >= intervalTimestamps[i]) {
-          tempTrades.push(trade)
+    if(trades) {
+      trades.forEach((trade) => {
+        if(!intervalTimestamps[i+1]) {
+          if(new Date(trade.filledAt).getTime() >= intervalTimestamps[i]) {
+            tempTrades.push(trade)
+          }
         }
-      }
-      else {
-        if(new Date(trade.filledAt).getTime() >= intervalTimestamps[i] && new Date(trade.filledAt).getTime() < intervalTimestamps[i + 1]) {
-          tempTrades.push(trade)
+        else {
+          if(new Date(trade.filledAt).getTime() >= intervalTimestamps[i] && new Date(trade.filledAt).getTime() < intervalTimestamps[i + 1]) {
+            tempTrades.push(trade)
+          }
         }
-      }
-    })
+      })
+    }
     tradeArrayArray.push(tempTrades)
   }
   
