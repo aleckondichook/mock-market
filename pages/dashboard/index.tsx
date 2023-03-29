@@ -5,7 +5,7 @@ import { prisma } from "../../lib/prisma"
 import Link from "next/link"
 import Loading from "../components/Loading"
 import Custom500 from "../500"
-import useDashboard from "../hooks/useDashboard"
+import useDashboard from "../../hooks/useDashboard"
 import useSwr from "swr"
 import { Line } from "react-chartjs-2"
 import { 

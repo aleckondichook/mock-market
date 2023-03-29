@@ -1,6 +1,6 @@
 import { NextPage } from "next"
 import { useState, useEffect } from "react"
-import useLeaderboard from "./hooks/useLeaderboard"
+import useLeaderboard from "../hooks/useLeaderboard"
 import Custom500 from "./500"
 import Loading from "./components/Loading"
 import useSwr from "swr"
