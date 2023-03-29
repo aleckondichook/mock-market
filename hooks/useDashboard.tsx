@@ -9,7 +9,7 @@ const useDashboard = (trades: TradeData[]) => {
   const intervalTimestamps: number[] = []
   const tradeArrayArray: TradeData[][] = []
   
-  if(trades) {
+  if(Array.isArray(trades)) {
     trades.forEach((trade: TradeData) => {
       return timestamps.push(new Date(trade.filledAt).getTime())
     })
@@ -21,7 +21,7 @@ const useDashboard = (trades: TradeData[]) => {
     dateArray.push(`${tempDate.getMonth() + 1}/${tempDate.getDate()}`)
   }
   
-  if(trades) {
+  if(Array.isArray(trades)) {
     trades.forEach((trade) => {
       return tradeArray.push(trade.ticker)
     })
@@ -29,7 +29,7 @@ const useDashboard = (trades: TradeData[]) => {
 
   const tickers: string[] = Array.from(new Set(tradeArray))
   const holdings: HoldingsData[] = []
-  if(tickers) {
+  if(Array.isArray(tickers)) {
     tickers.forEach((ticker) => {
       let temp: number = 0
       for(let trade of trades) {
@@ -51,7 +51,7 @@ const useDashboard = (trades: TradeData[]) => {
 
   for(let i = 0; i < intervalTimestamps.length; i++) {
     let tempTrades: TradeData[] = []
-    if(trades) {
+    if(Array.isArray(trades)) {
       trades.forEach((trade) => {
         if(!intervalTimestamps[i+1]) {
           if(new Date(trade.filledAt).getTime() >= intervalTimestamps[i]) {
