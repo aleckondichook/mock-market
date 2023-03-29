@@ -347,7 +347,7 @@ const Ticker: NextPage = (account: any) => {
 
   async function trade(data: any) {
     try {
-      fetch('http://localhost:3000/api/fill', {
+      fetch('/api/fill', {
         body: JSON.stringify(data),
         headers: {
           'Content-Type': 'application/json'

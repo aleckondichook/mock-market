@@ -129,7 +129,7 @@ const Dashboard: NextPage = (traderAccount: any) => {
             dashboardData.holdings.sort((a, b) => b.amount- a.amount).map((holding) => {
               return <div className="mt-4 mx-auto w-[90%] border-b-2 border-slate-300" key={holding.ticker}>
                 <div className="flex flex-row justify-between">
-                  <span className="text-[20px]">${holding.ticker} - {holding.amount} shares</span>
+                  <span className="text-[20px]">${holding.ticker} - {holding.amount} {holding.amount > 1 ? "shares" : "share"}</span>
                   <Link href={`/trade/${holding.ticker}`}><span className="underline hover:opacity-25">trade</span></Link>
                 </div>
               </div>
