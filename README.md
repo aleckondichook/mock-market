@@ -32,7 +32,7 @@ npm run dev
   <tbody>
     <tr>
       <td>Nextjs</td>
-      <td>PostgreSQL</td>
+      <td>Postgres</td>
       <td>Prisma</td>
     </tr>
     <tr>
