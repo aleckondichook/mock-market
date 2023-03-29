@@ -5,18 +5,20 @@ const useLeaderboard = (data: any) => {
   const traderTrades: { trader: any; trades: any[] }[] = []
   const portfolioValues: any[] = []
 
-  data.traders.forEach((trader: any) => {
-    let tempTrades: any[] = []
-    for(let trade of data.trades) {
-      if(trade.traderId === trader.id) {
-        tempTrades.push(trade)
+  if(data.traders) {
+    data.traders.forEach((trader: any) => {
+      let tempTrades: any[] = []
+      for(let trade of data.trades) {
+        if(trade.traderId === trader.id) {
+          tempTrades.push(trade)
+        }
       }
-    }
-    traderTrades.push({
-      trader: trader,
-      trades: tempTrades
+      traderTrades.push({
+        trader: trader,
+        trades: tempTrades
+      })
     })
-  })
+  }
   
   for(let i = 0; i < traderTrades.length; i++) {
     if(traderTrades[i].trades.length < 1) {
